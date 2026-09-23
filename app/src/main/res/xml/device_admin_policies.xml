@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Security policy declaration permitting screen locking functionality -->
-<device-admin>
-    <uses-policies>
-        <force-lock />
-    </uses-policies>
-</device-admin>
