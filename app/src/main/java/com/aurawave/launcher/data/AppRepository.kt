@@ -1,3 +1,38 @@
+package com.aurawave.launcher.data
+
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+
+// Repository class handling data queries from the Android system package manager
+class AppRepository(private val context: Context) {
+
+    // Queries all installed launchable applications on the device
+    fun getInstalledApps(): List<AppInfo> {
+        val packageManager = context.packageManager
+        
+        // Intent filter to find all apps with a launcher icon in the main app drawer
+        val mainIntent = Intent(Intent.ACTION_MAIN, null).apply {
+            addCategory(Intent.CATEGORY_LAUNCHER)
+        }
+
+        val resolveInfos = packageManager.queryIntentActivities(mainIntent, 0)
+        
+        // Map native System ResolveInfo objects into clean AppInfo data instances
+        return resolveInfos.map { resolveInfo ->
+            val label = resolveInfo.loadLabel(packageManager).toString()
+            val packageName = resolveInfo.activityInfo.packageName
+            val icon = resolveInfo.loadIcon(packageManager)
+            
+            AppInfo(label = label, packageName = packageName, icon = icon)
+        }.sortedBy { it.label.lowercase() } // Default alphabetical sort
+    }
+}
+
+
+
+
+
 // package com.aurawave.launcher.data
 
 // import android.content.Context
@@ -53,40 +88,3 @@
 //         }
 //     }
 // }
-
-
-
-
-
-
-
-package com.aurawave.launcher.data
-
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-
-// Repository class handling data queries from the Android system package manager
-class AppRepository(private val context: Context) {
-
-    // Queries all installed launchable applications on the device
-    fun getInstalledApps(): List<AppInfo> {
-        val packageManager = context.packageManager
-        
-        // Intent filter to find all apps with a launcher icon in the main app drawer
-        val mainIntent = Intent(Intent.ACTION_MAIN, null).apply {
-            addCategory(Intent.CATEGORY_LAUNCHER)
-        }
-
-        val resolveInfos = packageManager.queryIntentActivities(mainIntent, 0)
-        
-        // Map native System ResolveInfo objects into clean AppInfo data instances
-        return resolveInfos.map { resolveInfo ->
-            val label = resolveInfo.loadLabel(packageManager).toString()
-            val packageName = resolveInfo.activityInfo.packageName
-            val icon = resolveInfo.loadIcon(packageManager)
-            
-            AppInfo(label = label, packageName = packageName, icon = icon)
-        }.sortedBy { it.label.lowercase() } // Default alphabetical sort
-    }
-}
