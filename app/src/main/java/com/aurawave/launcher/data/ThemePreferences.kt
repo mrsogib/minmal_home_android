@@ -74,9 +74,11 @@ package com.aurawave.launcher.data
 import android.content.Context
 import androidx.core.content.edit
 
+// Key-Value persistent storage helper class using Android SharedPreferences
 class ThemePreferences(context: Context) {
     private val prefs = context.getSharedPreferences("wave_launcher_prefs", Context.MODE_PRIVATE)
 
+    // Clock display face (0 = Standard, 1 = Niagara Stacked)
     var clockStyle: Int
         get() = prefs.getInt("clock_style", 0)
         set(value) = prefs.edit { putInt("clock_style", value) }
@@ -117,6 +119,7 @@ class ThemePreferences(context: Context) {
         get() = prefs.getString("favorite_packages", "")?.split(",")?.filter { it.isNotBlank() } ?: emptyList()
         set(value) = prefs.edit { putString("favorite_packages", value.joinToString(",")) }
 
+    // Custom global app labels
     fun getCustomLabel(packageName: String): String? {
         return prefs.getString("label_$packageName", null)
     }
@@ -125,6 +128,7 @@ class ThemePreferences(context: Context) {
         prefs.edit { putString("label_$packageName", label) }
     }
 
+    // App hiding state
     fun isAppHidden(packageName: String): Boolean {
         return prefs.getBoolean("hide_$packageName", false)
     }
@@ -133,6 +137,7 @@ class ThemePreferences(context: Context) {
         prefs.edit { putBoolean("hide_$packageName", hidden) }
     }
 
+    // App launch counts for "Frequently Used" sorting
     fun getUsageCount(packageName: String): Int {
         return prefs.getInt("usage_$packageName", 0)
     }
