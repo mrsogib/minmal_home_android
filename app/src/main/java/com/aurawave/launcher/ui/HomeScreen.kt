@@ -141,7 +141,6 @@
 
 
 
-
 package com.aurawave.launcher.ui
 
 import android.content.BroadcastReceiver
@@ -199,6 +198,7 @@ fun HomeScreen(
     var currentTime by remember { mutableStateOf(Calendar.getInstance()) }
     var activeAlphabetIndex by remember { mutableStateOf<Int?>(null) }
 
+    // Listen to system intents for battery level updates and clock ticks
     DisposableEffect(Unit) {
         val receiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -218,6 +218,7 @@ fun HomeScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // Render local custom wallpaper if Uri is available
         wallpaperUri?.let { uri ->
             AsyncImage(
                 model = uri,
@@ -227,20 +228,24 @@ fun HomeScreen(
             )
         }
 
+        // Gesture Detection Overlay Box
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                // Double tap gesture detector
                 .pointerInput(Unit) {
                     detectTapGestures(
                         onDoubleTap = { onDoubleTap() }
                     )
                 }
+                // Pinch in / Pinch out gesture detector
                 .pointerInput(Unit) {
                     detectTransformGestures { _, _, zoom, _ ->
-                        if (zoom < 0.85f) onOpenSettings()
-                        else if (zoom > 1.15f) onOpenHidden()
+                        if (zoom < 0.85f) onOpenSettings() // Pinch in -> Settings
+                        else if (zoom > 1.15f) onOpenHidden() // Pinch out -> Hidden Apps
                     }
                 }
+                // Swipe gesture detector
                 .pointerInput(Unit) {
                     detectDragGestures { change, dragAmount ->
                         val (x, y) = dragAmount
@@ -249,6 +254,7 @@ fun HomeScreen(
                         } else {
                             if (y < -50) onSwipeUp()
                             else if (y > 50) {
+                                // Left half swipe down = Quick Settings, Right half swipe down = Notifications
                                 if (change.position.x < size.width / 2) onSwipeDownLeft() else onSwipeDownRight()
                             }
                         }
@@ -260,6 +266,7 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(horizontal = 28.dp, vertical = 48.dp)
             ) {
+                // Top Widget Section
                 ClockWidget(
                     currentTime = currentTime,
                     battery = batteryPercentage,
@@ -280,6 +287,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Favorite Apps List
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(18.dp)
@@ -298,6 +306,7 @@ fun HomeScreen(
                 }
             }
 
+            // Right-side Niagara Alphabet Rail with Dynamic Wave Scaling Animation
             Column(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
@@ -327,10 +336,12 @@ fun HomeScreen(
             ) {
                 availableAlphabets.forEachIndexed { index, char ->
                     val distance = activeAlphabetIndex?.let { kotlin.math.abs(it - index) } ?: 99
+                    
+                    // Wave magnification scale factor based on distance from finger position
                     val scaleFactor by animateFloatAsState(
                         targetValue = when (distance) {
-                            0 -> 2.2f
-                            1 -> 1.5f
+                            0 -> 2.2f // Active letter magnification
+                            1 -> 1.5f // Adjacent letter slight magnification
                             2 -> 1.2f
                             else -> 1.0f
                         },
@@ -353,6 +364,7 @@ fun HomeScreen(
     }
 }
 
+// Clock Widget Composable supporting both standard and Niagara stacked time displays
 @Composable
 fun ClockWidget(
     currentTime: Calendar,
@@ -365,6 +377,7 @@ fun ClockWidget(
 
     Column {
         if (clockStyle == 0) {
+            // Style 0: Standard inline clock layout
             val timeStr = SimpleDateFormat("hh:mm a", Locale.getDefault()).format(currentTime.time)
             Text(
                 text = timeStr,
@@ -375,6 +388,7 @@ fun ClockWidget(
                 modifier = Modifier.clickable { onClockClick() }
             )
         } else {
+            // Style 1: Niagara Stacked clock layout (Large hour, small minutes above AM/PM)
             val hourStr = SimpleDateFormat("hh", Locale.getDefault()).format(currentTime.time)
             val minStr = SimpleDateFormat("mm", Locale.getDefault()).format(currentTime.time)
             val amPmStr = SimpleDateFormat("a", Locale.getDefault()).format(currentTime.time)
@@ -407,6 +421,7 @@ fun ClockWidget(
             }
         }
 
+        // Date & Battery percentage indicator
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(top = 4.dp)
