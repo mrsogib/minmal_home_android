@@ -1,3 +1,12 @@
+package com.aurawave.launcher.widget
+
+import android.content.Context
+
+class WidgetHostManager(private val context: Context)
+
+
+
+
 // package com.aurawave.launcher.widget
 
 // import android.appwidget.AppWidgetHost
@@ -72,8 +81,3 @@
 
 
 
-package com.aurawave.launcher.widget
-
-import android.content.Context
-
-class WidgetHostManager(private val context: Context)
