@@ -1,3 +1,15 @@
+package com.aurawave.launcher.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+val DarkBackground = Color(0xFF0F0F0F)
+val PrimaryWhite = Color(0xFFFFFFFF)
+val SecondaryGray = Color(0xFFA0A0A0)
+val AccentColor = Color(0xFF6200EE)
+
+
+
+
 // package com.aurawave.launcher.ui.theme
 
 // import androidx.compose.ui.graphics.Color
@@ -10,11 +22,4 @@
 
 
 
-package com.aurawave.launcher.ui.theme
 
-import androidx.compose.ui.graphics.Color
-
-val DarkBackground = Color(0xFF0F0F0F)
-val PrimaryWhite = Color(0xFFFFFFFF)
-val SecondaryGray = Color(0xFFA0A0A0)
-val AccentColor = Color(0xFF6200EE)
