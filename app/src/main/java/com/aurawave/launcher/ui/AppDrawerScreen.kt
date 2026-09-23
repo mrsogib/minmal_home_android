@@ -90,7 +90,6 @@
 
 
 
-
 package com.aurawave.launcher.ui
 
 import androidx.activity.compose.BackHandler
@@ -116,16 +115,19 @@ fun AppDrawerScreen(
     onBack: () -> Unit,
     onRenameApp: (String, String) -> Unit
 ) {
+    // Intercept system back button to return to home screen cleanly
     BackHandler { onBack() }
 
     val listState = rememberLazyListState()
     var renameTargetPkg by remember { mutableStateOf<Pair<String, String>?>(null) }
     var searchFilter by remember { mutableStateOf("") }
 
+    // Filter apps dynamically based on text entered into search field
     val filteredApps = remember(apps, searchFilter) {
         if (searchFilter.isBlank()) apps else apps.filter { it.label.contains(searchFilter, ignoreCase = true) }
     }
 
+    // Automatically scroll app list to starting letter selected on home screen rail
     LaunchedEffect(initialLetter, filteredApps) {
         if (initialLetter != null) {
             val index = filteredApps.indexOfFirst {
@@ -143,6 +145,7 @@ fun AppDrawerScreen(
             .padding(horizontal = 24.dp, vertical = 32.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
+            // Search Input Box
             OutlinedTextField(
                 value = searchFilter,
                 onValueChange = { searchFilter = it },
@@ -159,6 +162,7 @@ fun AppDrawerScreen(
                     .padding(bottom = 16.dp)
             )
 
+            // Scrollable App Drawer List
             LazyColumn(
                 state = listState,
                 verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -178,6 +182,7 @@ fun AppDrawerScreen(
                             color = Color.White,
                             modifier = Modifier.weight(1f)
                         )
+                        // Trigger Rename Dialog
                         Text(
                             text = "Rename",
                             fontSize = 12.sp,
@@ -191,6 +196,7 @@ fun AppDrawerScreen(
             }
         }
 
+        // App Renaming Dialog Popup
         renameTargetPkg?.let { (pkg, currentLabel) ->
             var textValue by remember { mutableStateOf(currentLabel) }
             AlertDialog(
