@@ -1,3 +1,38 @@
+package com.aurawave.launcher.ui.components
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.aurawave.launcher.data.AppInfo
+
+@Composable
+fun AppListItem(
+    app: AppInfo,
+    onClick: () -> Unit
+) {
+    Text(
+        text = app.label,
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Normal,
+        color = Color.White,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(vertical = 8.dp)
+    )
+}
+
+
+
+
+
 // package com.aurawave.launcher.ui.components
 
 // import androidx.compose.foundation.combinedClickable
@@ -87,33 +122,3 @@
 
 
 
-package com.aurawave.launcher.ui.components
-
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.aurawave.launcher.data.AppInfo
-
-@Composable
-fun AppListItem(
-    app: AppInfo,
-    onClick: () -> Unit
-) {
-    Text(
-        text = app.label,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Normal,
-        color = Color.White,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 8.dp)
-    )
-}
