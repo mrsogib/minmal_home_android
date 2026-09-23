@@ -1,3 +1,115 @@
+package com.aurawave.launcher
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import com.aurawave.launcher.gestures.GestureExecutor
+import com.aurawave.launcher.ui.AppDrawerScreen
+import com.aurawave.launcher.ui.HomeScreen
+import com.aurawave.launcher.ui.SettingsScreen
+import com.aurawave.launcher.ui.theme.WaveLauncherTheme
+
+// ComponentActivity is the base class for Android activities using Jetpack Compose
+class MainActivity : ComponentActivity() {
+
+    // ViewModel manages application data and survives configuration changes (like screen rotation)
+    private val viewModel: LauncherViewModel by viewModels()
+    
+    // Helper class to handle system gestures (e.g., status bar, screen lock)
+    private lateinit var gestureExecutor: GestureExecutor
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        gestureExecutor = GestureExecutor(this)
+
+        // setContent replaces old XML layouts with Jetpack Compose UI code
+        setContent {
+            WaveLauncherTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    // Track current screen state ("home", "drawer", "settings", "hidden")
+                    var currentScreen by remember { mutableStateOf("home") }
+                    
+                    // Stores letter tapped on the home screen index rail to jump straight to in the drawer
+                    var initialDrawerLetter by remember { mutableStateOf<Char?>(null) }
+
+                    // Subscribe/Observe reactive state variables from ViewModel
+                    val favoriteApps by viewModel.favoriteApps.collectAsState()
+                    val allApps by viewModel.allApps.collectAsState()
+                    val availableAlphabets by viewModel.availableAlphabets.collectAsState()
+                    val currentWallpaperUri by viewModel.currentWallpaperUri.collectAsState()
+
+                    // Simple screen router switcher based on currentScreen variable
+                    when (currentScreen) {
+                        "home" -> HomeScreen(
+                            favoriteApps = favoriteApps,
+                            prefs = viewModel.prefs,
+                            wallpaperUri = currentWallpaperUri,
+                            onAppClick = { pkg -> viewModel.launchApp(this, pkg) },
+                            onOpenSettings = { currentScreen = "settings" },
+                            onOpenHidden = { currentScreen = "hidden" },
+                            onLeftSwipe = { viewModel.executeSwipeLeft(gestureExecutor, { currentScreen = "settings" }, { currentScreen = "hidden" }) },
+                            onRightSwipe = { viewModel.executeSwipeRight(gestureExecutor, { currentScreen = "settings" }, { currentScreen = "hidden" }) },
+                            onSwipeUp = { viewModel.executeSwipeUp(gestureExecutor, { currentScreen = "settings" }, { currentScreen = "hidden" }) },
+                            onSwipeDownLeft = { gestureExecutor.expandStatusBar("expandSettingsPanel") },
+                            onSwipeDownRight = { gestureExecutor.expandStatusBar("expandNotificationsPanel") },
+                            onDoubleTap = { gestureExecutor.lockScreen() },
+                            onAlphabetSelect = { letter ->
+                                initialDrawerLetter = letter
+                                currentScreen = "drawer"
+                            },
+                            availableAlphabets = availableAlphabets
+                        )
+                        "drawer" -> AppDrawerScreen(
+                            apps = allApps,
+                            initialLetter = initialDrawerLetter,
+                            onAppClick = { pkg ->
+                                viewModel.launchApp(this, pkg)
+                                currentScreen = "home" // Return home after launching an app
+                            },
+                            onBack = { currentScreen = "home" },
+                            onRenameApp = { pkg, newName -> viewModel.renameApp(pkg, newName) }
+                        )
+                        "settings" -> SettingsScreen(
+                            prefs = viewModel.prefs,
+                            allApps = allApps,
+                            onBack = { currentScreen = "home" },
+                            onWallpaperFolderSelected = { uri, timerMinutes -> viewModel.setupWallpaperFolder(uri, timerMinutes) }
+                        )
+                        "hidden" -> AppDrawerScreen(
+                            apps = viewModel.getHiddenApps(),
+                            initialLetter = null,
+                            onAppClick = { pkg -> viewModel.launchApp(this, pkg) },
+                            onBack = { currentScreen = "home" },
+                            onRenameApp = { pkg, newName -> viewModel.renameApp(pkg, newName) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    // Refresh installed app list whenever launcher comes back to foreground
+    override fun onResume() {
+        super.onResume()
+        viewModel.loadApps(this)
+    }
+}
+
+
+
+
+
+
+
 // package com.aurawave.launcher
 
 // import android.content.Intent
@@ -171,108 +283,3 @@
 
 
 
-package com.aurawave.launcher
-
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import com.aurawave.launcher.gestures.GestureExecutor
-import com.aurawave.launcher.ui.AppDrawerScreen
-import com.aurawave.launcher.ui.HomeScreen
-import com.aurawave.launcher.ui.SettingsScreen
-import com.aurawave.launcher.ui.theme.WaveLauncherTheme
-
-// ComponentActivity is the base class for Android activities using Jetpack Compose
-class MainActivity : ComponentActivity() {
-
-    // ViewModel manages application data and survives configuration changes (like screen rotation)
-    private val viewModel: LauncherViewModel by viewModels()
-    
-    // Helper class to handle system gestures (e.g., status bar, screen lock)
-    private lateinit var gestureExecutor: GestureExecutor
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        gestureExecutor = GestureExecutor(this)
-
-        // setContent replaces old XML layouts with Jetpack Compose UI code
-        setContent {
-            WaveLauncherTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    // Track current screen state ("home", "drawer", "settings", "hidden")
-                    var currentScreen by remember { mutableStateOf("home") }
-                    
-                    // Stores letter tapped on the home screen index rail to jump straight to in the drawer
-                    var initialDrawerLetter by remember { mutableStateOf<Char?>(null) }
-
-                    // Subscribe/Observe reactive state variables from ViewModel
-                    val favoriteApps by viewModel.favoriteApps.collectAsState()
-                    val allApps by viewModel.allApps.collectAsState()
-                    val availableAlphabets by viewModel.availableAlphabets.collectAsState()
-                    val currentWallpaperUri by viewModel.currentWallpaperUri.collectAsState()
-
-                    // Simple screen router switcher based on currentScreen variable
-                    when (currentScreen) {
-                        "home" -> HomeScreen(
-                            favoriteApps = favoriteApps,
-                            prefs = viewModel.prefs,
-                            wallpaperUri = currentWallpaperUri,
-                            onAppClick = { pkg -> viewModel.launchApp(this, pkg) },
-                            onOpenSettings = { currentScreen = "settings" },
-                            onOpenHidden = { currentScreen = "hidden" },
-                            onLeftSwipe = { viewModel.executeSwipeLeft(gestureExecutor, { currentScreen = "settings" }, { currentScreen = "hidden" }) },
-                            onRightSwipe = { viewModel.executeSwipeRight(gestureExecutor, { currentScreen = "settings" }, { currentScreen = "hidden" }) },
-                            onSwipeUp = { viewModel.executeSwipeUp(gestureExecutor, { currentScreen = "settings" }, { currentScreen = "hidden" }) },
-                            onSwipeDownLeft = { gestureExecutor.expandStatusBar("expandSettingsPanel") },
-                            onSwipeDownRight = { gestureExecutor.expandStatusBar("expandNotificationsPanel") },
-                            onDoubleTap = { gestureExecutor.lockScreen() },
-                            onAlphabetSelect = { letter ->
-                                initialDrawerLetter = letter
-                                currentScreen = "drawer"
-                            },
-                            availableAlphabets = availableAlphabets
-                        )
-                        "drawer" -> AppDrawerScreen(
-                            apps = allApps,
-                            initialLetter = initialDrawerLetter,
-                            onAppClick = { pkg ->
-                                viewModel.launchApp(this, pkg)
-                                currentScreen = "home" // Return home after launching an app
-                            },
-                            onBack = { currentScreen = "home" },
-                            onRenameApp = { pkg, newName -> viewModel.renameApp(pkg, newName) }
-                        )
-                        "settings" -> SettingsScreen(
-                            prefs = viewModel.prefs,
-                            allApps = allApps,
-                            onBack = { currentScreen = "home" },
-                            onWallpaperFolderSelected = { uri, timerMinutes -> viewModel.setupWallpaperFolder(uri, timerMinutes) }
-                        )
-                        "hidden" -> AppDrawerScreen(
-                            apps = viewModel.getHiddenApps(),
-                            initialLetter = null,
-                            onAppClick = { pkg -> viewModel.launchApp(this, pkg) },
-                            onBack = { currentScreen = "home" },
-                            onRenameApp = { pkg, newName -> viewModel.renameApp(pkg, newName) }
-                        )
-                    }
-                }
-            }
-        }
-    }
-
-    // Refresh installed app list whenever launcher comes back to foreground
-    override fun onResume() {
-        super.onResume()
-        viewModel.loadApps(this)
-    }
-}
