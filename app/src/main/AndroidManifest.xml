@@ -2,9 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- PERMISSION: Allows the launcher to query all installed apps on Android 11+ -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:ignore="QueryAllPackagesPermission" />
+    
+    <!-- PERMISSION: Allows programmatically expanding the notification shade on swipe down -->
     <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+    
+    <!-- PERMISSION: Optional system permission to check app usage frequency for drawer sorting -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+    
+    <!-- PERMISSIONS: Read local images for wallpaper slideshow (Android 13+ and legacy) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
 
@@ -16,6 +23,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WaveLauncher">
 
+        <!-- Main Launcher Activity -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -24,12 +32,15 @@
             android:stateNotNeeded="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+                
+                <!-- HOME category tells Android this app can act as the system home screen -->
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- Device Admin Receiver: Enables screen locking via double-tap gesture -->
         <receiver
             android:name=".gestures.AdminReceiver"
             android:permission="android.permission.BIND_DEVICE_ADMIN"
