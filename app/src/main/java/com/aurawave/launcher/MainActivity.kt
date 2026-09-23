@@ -169,6 +169,8 @@
 
 
 
+
+
 package com.aurawave.launcher
 
 import android.os.Bundle
@@ -186,29 +188,39 @@ import com.aurawave.launcher.ui.HomeScreen
 import com.aurawave.launcher.ui.SettingsScreen
 import com.aurawave.launcher.ui.theme.WaveLauncherTheme
 
+// ComponentActivity is the base class for Android activities using Jetpack Compose
 class MainActivity : ComponentActivity() {
 
+    // ViewModel manages application data and survives configuration changes (like screen rotation)
     private val viewModel: LauncherViewModel by viewModels()
+    
+    // Helper class to handle system gestures (e.g., status bar, screen lock)
     private lateinit var gestureExecutor: GestureExecutor
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         gestureExecutor = GestureExecutor(this)
 
+        // setContent replaces old XML layouts with Jetpack Compose UI code
         setContent {
             WaveLauncherTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // Track current screen state ("home", "drawer", "settings", "hidden")
                     var currentScreen by remember { mutableStateOf("home") }
+                    
+                    // Stores letter tapped on the home screen index rail to jump straight to in the drawer
                     var initialDrawerLetter by remember { mutableStateOf<Char?>(null) }
 
+                    // Subscribe/Observe reactive state variables from ViewModel
                     val favoriteApps by viewModel.favoriteApps.collectAsState()
                     val allApps by viewModel.allApps.collectAsState()
                     val availableAlphabets by viewModel.availableAlphabets.collectAsState()
                     val currentWallpaperUri by viewModel.currentWallpaperUri.collectAsState()
 
+                    // Simple screen router switcher based on currentScreen variable
                     when (currentScreen) {
                         "home" -> HomeScreen(
                             favoriteApps = favoriteApps,
@@ -234,7 +246,7 @@ class MainActivity : ComponentActivity() {
                             initialLetter = initialDrawerLetter,
                             onAppClick = { pkg ->
                                 viewModel.launchApp(this, pkg)
-                                currentScreen = "home"
+                                currentScreen = "home" // Return home after launching an app
                             },
                             onBack = { currentScreen = "home" },
                             onRenameApp = { pkg, newName -> viewModel.renameApp(pkg, newName) }
@@ -258,6 +270,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    // Refresh installed app list whenever launcher comes back to foreground
     override fun onResume() {
         super.onResume()
         viewModel.loadApps(this)
