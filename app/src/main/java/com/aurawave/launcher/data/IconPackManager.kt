@@ -1,3 +1,14 @@
+package com.aurawave.launcher.data
+
+import android.content.Context
+
+class IconPackManager(private val context: Context) {
+    // Minimalist launcher runs text-only; helper class preserved for future extensions
+}
+
+
+
+
 // package com.aurawave.launcher.data
 
 // import android.content.Context
@@ -94,11 +105,4 @@
 
 
 
-package com.aurawave.launcher.data
-
-import android.content.Context
-
-class IconPackManager(private val context: Context) {
-    // Minimalist launcher runs text-only; helper class preserved for future extensions
-}
 
