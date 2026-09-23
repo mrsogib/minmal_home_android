@@ -193,14 +193,15 @@ package com.aurawave.launcher.ui
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.aurawave.launcher.data.AppInfo
@@ -213,18 +214,20 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onWallpaperFolderSelected: (String, Long) -> Unit
 ) {
+    // Intercept hardware/system back button
     BackHandler { onBack() }
 
-    var clockStyle by remember { mutableStateOf(prefs.clockStyle) }
-    var sortMode by remember { mutableStateOf(prefs.drawerSortMode) }
+    var clockStyle by remember { mutableIntStateOf(prefs.clockStyle) }
+    var drawerSortMode by remember { mutableIntStateOf(prefs.drawerSortMode) }
     var timerMinutesText by remember { mutableStateOf(prefs.wallpaperIntervalMinutes.toString()) }
 
-    val folderPicker = rememberLauncherForActivityResult(
+    // System folder picker launcher for wallpaper slideshow directory
+    val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
         uri?.let {
-            val interval = timerMinutesText.toLongOrNull() ?: 60L
-            onWallpaperFolderSelected(it.toString(), interval)
+            val minutes = timerMinutesText.toLongOrNull() ?: 60L
+            onWallpaperFolderSelected(it.toString(), minutes)
         }
     }
 
@@ -235,70 +238,90 @@ fun SettingsScreen(
             .verticalScroll(rememberScrollState())
     ) {
         Text(
-            text = "WaveLauncher Settings",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White
+            text = "SETTINGS",
+            fontSize = 20.sp,
+            color = Color.White,
+            modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text("Clock Style", color = Color.LightGray, fontSize = 14.sp)
+        // Section: Clock Style Switcher
+        Text("Clock Display Style", color = Color.LightGray, fontSize = 14.sp)
         Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            FilterChip(
-                selected = clockStyle == 0,
+            Button(
                 onClick = {
                     clockStyle = 0
                     prefs.clockStyle = 0
                 },
-                label = { Text("Standard") }
-            )
-            FilterChip(
-                selected = clockStyle == 1,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (clockStyle == 0) Color.Gray else Color.DarkGray
+                )
+            ) {
+                Text("Inline Clock")
+            }
+
+            Button(
                 onClick = {
                     clockStyle = 1
                     prefs.clockStyle = 1
                 },
-                label = { Text("Niagara Stacked") }
-            )
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (clockStyle == 1) Color.Gray else Color.DarkGray
+                )
+            ) {
+                Text("Stacked Clock")
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color.DarkGray)
 
+        // Section: Drawer Sort Mode
         Text("App Drawer Sorting", color = Color.LightGray, fontSize = 14.sp)
         Row(
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(vertical = 8.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            FilterChip(
-                selected = sortMode == 0,
+            Button(
                 onClick = {
-                    sortMode = 0
+                    drawerSortMode = 0
                     prefs.drawerSortMode = 0
                 },
-                label = { Text("Alphabetical") }
-            )
-            FilterChip(
-                selected = sortMode == 1,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (drawerSortMode == 0) Color.Gray else Color.DarkGray
+                )
+            ) {
+                Text("Alphabetical")
+            }
+
+            Button(
                 onClick = {
-                    sortMode = 1
+                    drawerSortMode = 1
                     prefs.drawerSortMode = 1
                 },
-                label = { Text("Frequently Used") }
-            )
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (drawerSortMode == 1) Color.Gray else Color.DarkGray
+                )
+            ) {
+                Text("Most Used")
+            }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color.DarkGray)
 
-        Text("Wallpaper Slideshow", color = Color.LightGray, fontSize = 14.sp)
+        // Section: Dynamic Wallpaper Folder Configuration
+        Text("Wallpaper Folder Slideshow", color = Color.LightGray, fontSize = 14.sp)
         Spacer(modifier = Modifier.height(8.dp))
+        
         OutlinedTextField(
             value = timerMinutesText,
             onValueChange = { timerMinutesText = it },
-            label = { Text("Change Interval (Minutes)", color = Color.Gray) },
+            label = { Text("Rotation Interval (Minutes)") },
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
                 focusedTextColor = Color.White,
@@ -306,21 +329,24 @@ fun SettingsScreen(
             ),
             modifier = Modifier.fillMaxWidth()
         )
-        Spacer(modifier = Modifier.height(8.dp))
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         Button(
-            onClick = { folderPicker.launch(null) },
+            onClick = { folderPickerLauncher.launch(null) },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Select Local Wallpaper Folder")
+            Text("Select Wallpaper Folder")
         }
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        Button(
+        // Back Button
+        TextButton(
             onClick = onBack,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
-            Text("Done")
+            Text("Back to Home", color = Color.White)
         }
     }
 }
