@@ -60,7 +60,6 @@
 
 
 
-
 package com.aurawave.launcher.gestures
 
 import android.annotation.SuppressLint
@@ -70,6 +69,7 @@ import android.content.Context
 import android.content.Intent
 import java.lang.reflect.Method
 
+// Handles low-level Android system actions triggered by touch gestures
 class GestureExecutor(private val context: Context) {
 
     fun execute(action: GestureAction, onOpenSettings: () -> Unit, onOpenHidden: () -> Unit) {
@@ -92,6 +92,7 @@ class GestureExecutor(private val context: Context) {
         }
     }
 
+    // Uses Java reflection to invoke hidden status bar expand methods
     @SuppressLint("WrongConstant")
     fun expandStatusBar(methodName: String) {
         try {
@@ -104,12 +105,14 @@ class GestureExecutor(private val context: Context) {
         }
     }
 
+    // Locks device screen using Android Device Policy Administrator
     fun lockScreen() {
         val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
         val adminComponent = ComponentName(context, AdminReceiver::class.java)
         if (dpm.isAdminActive(adminComponent)) {
             dpm.lockNow()
         } else {
+            // Prompt user to grant Device Admin permission if not yet enabled
             val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN).apply {
                 putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
                 putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Required to lock screen on double tap.")
