@@ -1,3 +1,19 @@
+package com.aurawave.launcher.widget
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+
+class WidgetPickerActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        finish()
+    }
+}
+
+
+
+
+
 // package com.aurawave.launcher.widget
 
 // import android.app.Activity
@@ -61,14 +77,3 @@
 
 
 
-package com.aurawave.launcher.widget
-
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-
-class WidgetPickerActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        finish()
-    }
-}
