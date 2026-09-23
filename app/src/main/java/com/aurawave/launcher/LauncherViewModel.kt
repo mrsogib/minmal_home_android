@@ -104,7 +104,6 @@
 
 
 
-
 package com.aurawave.launcher
 
 import android.app.Application
@@ -126,11 +125,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
+// AndroidViewModel provides access to Application context while managing UI state
 class LauncherViewModel(application: Application) : AndroidViewModel(application) {
 
     val prefs = ThemePreferences(application)
     private val repository = AppRepository(application)
 
+    // StateFlow exposes reactive data stream that Compose UI observes for automatic updates
     private val _allApps = MutableStateFlow<List<AppInfo>>(emptyList())
     val allApps: StateFlow<List<AppInfo>> = _allApps
 
@@ -150,38 +151,46 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         initWallpaperSlideshow()
     }
 
+    // Queries installed apps, applies custom user labels, filters out hidden apps, and sorts list
     fun loadApps(context: Context) {
         viewModelScope.launch {
             val rawApps = repository.getInstalledApps()
+            
+            // Map custom names if defined by user
             val processedApps = rawApps.map { app ->
                 val customLabel = prefs.getCustomLabel(app.packageName)
                 if (customLabel != null) app.copy(label = customLabel) else app
             }.filter { !prefs.isAppHidden(it.packageName) }
 
+            // Apply selected sorting algorithm
             _allApps.value = when (prefs.drawerSortMode) {
                 1 -> processedApps.sortedByDescending { prefs.getUsageCount(it.packageName) }
                 else -> processedApps.sortedBy { it.label.lowercase() }
             }
 
+            // Extract unique starting letters present in installed apps (hides empty letters)
             _availableAlphabets.value = _allApps.value
                 .map { it.label.firstOrNull()?.uppercaseChar() ?: '#' }
                 .distinct()
                 .sorted()
 
+            // Populate favorite apps list
             val favPackages = prefs.favoriteAppPackages
             _favoriteApps.value = if (favPackages.isNotEmpty()) {
                 favPackages.mapNotNull { pkg -> _allApps.value.find { it.packageName == pkg } }
             } else {
-                _allApps.value.take(12)
+                _allApps.value.take(12) // Default to first 12 apps if none chosen
             }
         }
     }
 
+    // Globally renames app label across both drawer and home favorites
     fun renameApp(packageName: String, newName: String) {
         prefs.setCustomLabel(packageName, newName.ifBlank { null })
         loadApps(getApplication())
     }
 
+    // Launches selected application and increments usage counter for sorting
     fun launchApp(context: Context, packageName: String) {
         prefs.incrementUsageCount(packageName)
         val intent = context.packageManager.getLaunchIntentForPackage(packageName)
@@ -196,12 +205,14 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         return rawApps.filter { prefs.isAppHidden(it.packageName) }
     }
 
+    // Configures folder location and interval timer for local wallpaper slideshow
     fun setupWallpaperFolder(folderUriStr: String, intervalMinutes: Long) {
         prefs.wallpaperFolderUri = folderUriStr
         prefs.wallpaperIntervalMinutes = intervalMinutes
         initWallpaperSlideshow()
     }
 
+    // Background coroutine loop to cycle wallpapers based on user interval
     private fun initWallpaperSlideshow() {
         wallpaperTimerJob?.cancel()
         val uriStr = prefs.wallpaperFolderUri ?: return
@@ -211,11 +222,12 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
             while (isActive) {
                 pickRandomWallpaper(uriStr)
                 if (minutes <= 0) break
-                delay(minutes * 60 * 1000L)
+                delay(minutes * 60 * 1000L) // Convert minutes to milliseconds
             }
         }
     }
 
+    // Selects a random image from user's selected URI folder
     private fun pickRandomWallpaper(folderUriStr: String) {
         try {
             val context = getApplication<Application>()
@@ -230,6 +242,7 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    // Custom Gesture Handlers
     fun executeSwipeLeft(executor: GestureExecutor, onSettings: () -> Unit, onHidden: () -> Unit) {
         val target = prefs.swipeLeftApp
         if (target != null) executor.execute(GestureAction.LaunchApp(target), onSettings, onHidden)
@@ -245,6 +258,4 @@ class LauncherViewModel(application: Application) : AndroidViewModel(application
         if (target != null) executor.execute(GestureAction.LaunchApp(target), onSettings, onHidden)
     }
 }
-
-
 
