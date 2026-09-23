@@ -1,3 +1,31 @@
+package com.aurawave.launcher.ui.theme
+
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.runtime.Composable
+
+private val DarkColorScheme = darkColorScheme(
+    primary = PrimaryWhite,
+    secondary = SecondaryGray,
+    background = DarkBackground,
+    surface = DarkBackground
+)
+
+@Composable
+fun WaveLauncherTheme(
+    content: @Composable () -> Unit
+) {
+    MaterialTheme(
+        colorScheme = DarkColorScheme,
+        typography = Typography,
+        content = content
+    )
+}
+
+
+
+
+
 // package com.aurawave.launcher.ui.theme
 
 // import androidx.compose.foundation.isSystemInDarkTheme
@@ -45,26 +73,3 @@
 
 
 
-package com.aurawave.launcher.ui.theme
-
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.runtime.Composable
-
-private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryWhite,
-    secondary = SecondaryGray,
-    background = DarkBackground,
-    surface = DarkBackground
-)
-
-@Composable
-fun WaveLauncherTheme(
-    content: @Composable () -> Unit
-) {
-    MaterialTheme(
-        colorScheme = DarkColorScheme,
-        typography = Typography,
-        content = content
-    )
-}
