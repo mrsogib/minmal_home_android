@@ -1,3 +1,20 @@
+package com.aurawave.launcher.gestures
+
+// Sealed interface defining all supported gesture actions across the launcher UI
+sealed interface GestureAction {
+    data class LaunchApp(val packageName: String) : GestureAction
+    object ExpandNotifications : GestureAction
+    object ExpandQuickSettings : GestureAction
+    object LockScreen : GestureAction
+    object OpenSettings : GestureAction
+    object OpenHiddenApps : GestureAction
+    object None : GestureAction
+}
+
+
+
+
+
 // package com.aurawave.launcher.gestures
 
 // /** The set of actions a swipe or tap can be bound to in Settings. */
@@ -17,15 +34,4 @@
 
 
 
-package com.aurawave.launcher.gestures
 
-// Sealed interface defining all supported gesture actions across the launcher UI
-sealed interface GestureAction {
-    data class LaunchApp(val packageName: String) : GestureAction
-    object ExpandNotifications : GestureAction
-    object ExpandQuickSettings : GestureAction
-    object LockScreen : GestureAction
-    object OpenSettings : GestureAction
-    object OpenHiddenApps : GestureAction
-    object None : GestureAction
-}
