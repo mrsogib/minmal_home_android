@@ -22,6 +22,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      # GitHub's Ubuntu runners already ship with a working, pre-licensed Android
+      # SDK at ANDROID_HOME (this is why the earlier "android-actions/setup-android"
+      # step failed — it tried to reinstall the SDK and reach for a legacy "tools"
+      # package Google removed years ago). We just point Gradle at what's already
+      # there instead of touching the SDK install at all.
       - name: Confirm Android SDK location
         run: echo "Using preinstalled SDK at $ANDROID_HOME"
 
