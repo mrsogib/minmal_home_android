@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Permission list — kept deliberately short. See README.md "Permissions" section
+        for a plain-language explanation of each one.
+    -->
+
+    <!-- Normal permission, granted automatically, no dangerous data access.
+         Lets the launcher pull down the notification shade / quick settings on swipe,
+         same trick most third-party launchers use. -->
+    <uses-permission android:name="android.permission.EXPAND_STATUS_BAR" />
+
+    <!-- Only needed if you turn on "double-tap to lock" in Settings. It is requested
+         at runtime as a device-admin grant (a system dialog you approve explicitly),
+         not a manifest permission, and the app never reads or transmits any data
+         through it — it only calls lockNow(). See LauncherDeviceAdminReceiver.kt. -->
+
+    <!-- No INTERNET, no ACCESS_FINE/COARSE_LOCATION, no READ_EXTERNAL_STORAGE:
+         the wallpaper folder feature uses the Storage Access Framework (SAF) picker
+         instead, which needs zero storage permission. -->
+
+    <!-- Normal permission, needed only to actually apply the wallpaper you pick. -->
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+
+    <application
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.MinimalLauncher"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:stateNotNeeded="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.HOME" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".AppDrawerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MinimalLauncher" />
+
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MinimalLauncher" />
+
+        <receiver
+            android:name=".WallpaperRotationReceiver"
+            android:exported="false" />
+
+        <!-- Powers the optional "notification preview under favorites" feature.
+             This is NOT granted by installing the app: the user must explicitly
+             turn it on via Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS, which
+             is a special, revocable grant separate from normal app permissions.
+             It is off by default (see PrefsHelper.isNotificationPreviewEnabled). -->
+        <service
+            android:name=".NotificationAccessService"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".LauncherDeviceAdminReceiver"
+            android:exported="true"
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>
