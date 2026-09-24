@@ -22,8 +22,8 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Confirm Android SDK location
+        run: echo "Using preinstalled SDK at $ANDROID_HOME"
 
       # We ship the project without a compiled gradle-wrapper.jar (a binary that
       # doesn't survive a plain file export), so instead of ./gradlew we install
